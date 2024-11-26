@@ -8,7 +8,7 @@ from discord.ext.commands import has_permissions, MissingPermissions
 from private.config import token
 from datetime import datetime
 
-owner_id=
+owner_id=1242535080866349226
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents, owner_id = owner_id)
@@ -19,8 +19,8 @@ def addPath(ctx):
     path = dir+"/serverData/" + str(ctx.guild.id)
     if not os.path.exists(path):
         os.makedirs(path)
-        open(path+"/data.txt","w")
-        file = open(path+"/data.txt", "w")
+        open(path+"/activity.txt","w")
+        file = open(path+"/activity.txt", "w")
         word=["[ROLE]: none\n"]
         file.writelines(word)
         file.close()
@@ -63,41 +63,42 @@ async def sync(ctx):
 @app_commands.check(owner_admin)
 async def default_role(ctx):
     print("[/default_role]")
-    file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "data.txt", "r")
+    file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "r")
     wordList=file.readlines()
     file.close()
     if "[ROLE]: " not in wordList[0]:
         wordList.insert(0, "[ROLE]: active\n")
-        fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "data.txt", "w")
+        fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "w")
         fileWrite.writelines(wordList)
         fileWrite.close()
-        await ctx.response.send_message('"admin" was made the default access role.', ephemeral=True)
-        print('They made "admin" the new default role')
+        await ctx.response.send_message('"active" was made the default activity role.', ephemeral=True)
+        print('They made "active" the new default role')
     else:
         rolename=wordList[0].strip("\n").replace("[ROLE]: ", "")
         print(f'"{rolename}" was already the default role')
-        await ctx.response.send_message(f'"{rolename}" has already been set up as the access role.', ephemeral=True)
+        await ctx.response.send_message(f'"{rolename}" has already been set up as the activity role.', ephemeral=True)
 
 #sets the role to be given
-@bot.tree.command(name='role_act', description='[ADMIN] Setup a role to access advanced commands (i.e, "admin")')
+@bot.tree.command(name='role_act', description='[ADMIN] Setup a role to be given/removed upon activity or lack thereof.')
 @app_commands.check(owner_admin)
 async def setupAllowedRole(ctx, role: str):
-    file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "data.txt", "r")
+    file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "r")
     wordList=file.readlines()
     file.close()
     rolename=wordList[0].strip("\n").replace("[ROLE]: ", "")
     print(f'[/role_act]\n[ORIGINAL ROLE]: "{rolename}"\n[NEW ROLE]: "{role}"')
     wordList[0]="[ROLE]: "+role+"\n"
-    fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "data.txt", "w")
+    fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "w")
     fileWrite.writelines(wordList)
     fileWrite.close()
+    await ctx.response.send_message(f"\"{role}\" has been made the server's activity role!", ephemeral=True)
     await hourlyCheck.start(ctx)
-    await ctx.response.send_message(f"\"{role}\" has been made the server's only role with access to the advanced commands!", ephemeral=True)
+
 
 #checks if user has sent at least once message in the last 7 days
-@tasks.loop(hours=1)
+@tasks.loop(seconds=5)
 async def hourlyCheck(ctx):
-    file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "data.txt", "r")
+    file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "r")
     userList=file.readlines()
     file.close()
     roleCheck=userList[0].split()
@@ -119,8 +120,7 @@ async def hourlyCheck(ctx):
 #updates upon user message and gives them the role if they don't have it
 @bot.event
 async def on_message(ctx):
-    addPath(ctx)
-    file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "data.txt", "r")
+    file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "r")
     userList=file.readlines()
     file.close()
     roleCheck=userList[0].split()
@@ -133,16 +133,16 @@ async def on_message(ctx):
             if userID==str(ctx.author.id):
                 content[1]=datetime.now().strftime("%d/%m/%Y")
                 userList[i]=' '.join(content)+'\n'
-                fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "data.txt", "w")
+                fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "w")
                 fileWrite.writelines(userList)
                 fileWrite.close()
                 check=False
                 break
-            if check:
-                nowDate=datetime.now().strftime("%d/%m/%Y")
-                fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "data.txt", "a")
-                fileWrite.write(f"[{ctx.author.id}]: {nowDate}\n")
-                fileWrite.close()
+        if check:
+            nowDate=datetime.now().strftime("%d/%m/%Y")
+            fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "a")
+            fileWrite.write(f"[{ctx.author.id}]: {nowDate}\n")
+            fileWrite.close()
         role=userList[0].split()
         role=role[1]
         role=discord.utils.get(ctx.guild.roles, name=role)
