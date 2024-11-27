@@ -1,14 +1,14 @@
 #https://discord.com/oauth2/authorize?client_id=1311068031384027167
 
 import os
-import discord
+import discord #pip install discord
 from discord import app_commands
 from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions, MissingPermissions
 from private.config import token
-from datetime import datetime
+from datetime import datetime #pip install datetime
 
-owner_id=
+owner_id=1242535080866349226
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents, owner_id = owner_id)
@@ -72,11 +72,12 @@ async def default_role(ctx):
         fileWrite.writelines(wordList)
         fileWrite.close()
         await ctx.response.send_message('"active" was made the default activity role.', ephemeral=True)
-        print('They made "active" the new default role')
+        print('They made "active" the new default role\n---\n')
     else:
         rolename=wordList[0].strip("\n").replace("[ROLE]: ", "")
-        print(f'"{rolename}" was already the default role')
+        print(f'"{rolename}" was already the default role.\n---\n')
         await ctx.response.send_message(f'"{rolename}" has already been set up as the activity role.', ephemeral=True)
+    await hourlyCheck.start(ctx)
 
 #sets the role to be given
 @bot.tree.command(name='role_act', description='[ADMIN] Setup a role to be given/removed upon activity or lack thereof.')
@@ -96,8 +97,9 @@ async def setupAllowedRole(ctx, role: str):
 
 
 #checks if user has sent at least once message in the last 7 days
-@tasks.loop(seconds=5)
+@tasks.loop(hours=1)
 async def hourlyCheck(ctx):
+    print("[checking]\n")
     file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "r")
     userList=file.readlines()
     file.close()
@@ -111,6 +113,7 @@ async def hourlyCheck(ctx):
             savedDate= now.strptime(content[1], "%d/%m/%Y")
             timeGap = nowDate - savedDate
             if timeGap.days > 7:
+                print(f'{content[0].strip("[]:")} has been inactive for over 7 days and lost their role\n---\n')
                 role=userList[0].split()
                 role=role[1]
                 role=discord.utils.get(ctx.guild.roles, name=role)
@@ -126,6 +129,7 @@ async def on_message(ctx):
     roleCheck=userList[0].split()
     roleCheck=roleCheck[1]
     check=True
+    print("[NEW MESSAGE]\n")
     if roleCheck != "none":
         for i in range(len(userList)):
             content=userList[i].split()
@@ -136,15 +140,18 @@ async def on_message(ctx):
                 fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "w")
                 fileWrite.writelines(userList)
                 fileWrite.close()
+                print("[EDIT]\n")
                 check=False
                 break
         if check:
+            print("[NEW]\n")
             nowDate=datetime.now().strftime("%d/%m/%Y")
             fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "a")
             fileWrite.write(f"[{ctx.author.id}]: {nowDate}\n")
             fileWrite.close()
         role=userList[0].split()
         role=role[1]
+        print(f'Added "{role}" to "{ctx.author.id}"\n---\n')
         role=discord.utils.get(ctx.guild.roles, name=role)
         member = await ctx.guild.fetch_member(ctx.author.id)
         await member.add_roles(role)
