@@ -11,6 +11,7 @@ Discord Bot made to add some flair to servers.
 ### Activity
 Checks if user has sent a message in the last week, if not remove the activity role
 (Starts upon the use of /role_act or /default_act)
+</br></br>
 **[Once every hour]**
 </br></br>
 
