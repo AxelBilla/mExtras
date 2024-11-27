@@ -8,7 +8,7 @@ from discord.ext.commands import has_permissions, MissingPermissions
 from private.config import token
 from datetime import datetime #pip install datetime
 
-owner_id=1242535080866349226
+owner_id=
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents, owner_id = owner_id)
