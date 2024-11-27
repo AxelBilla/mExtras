@@ -8,7 +8,7 @@ Discord Bot made to add some flair to servers.
 ## 【 Features 】
 
 
-### Activities
+### Activity
 Checks if user has sent a message in the last week, if not removes the activity role
 **[Once every hour]**
 </br></br>
