@@ -8,7 +8,7 @@ from discord.ext.commands import has_permissions, MissingPermissions
 from private.config import token
 from datetime import datetime #pip install datetime
 
-owner_id=
+owner_id=1242535080866349226
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents, owner_id = owner_id)
@@ -103,9 +103,8 @@ async def hourlyCheck(ctx):
     file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "r")
     userList=file.readlines()
     file.close()
-    roleCheck=userList[0].split()
-    roleCheck=roleCheck[1]
-    if roleCheck != "none":
+    role=userList[0].strip("\n").replace("[ROLE]: ", "")
+    if role != "none":
         for i in range(1,len(userList)):
             now=datetime.now()
             nowDate = now.strptime(now.strftime("%d/%m/%Y"), "%d/%m/%Y")
@@ -114,15 +113,14 @@ async def hourlyCheck(ctx):
             timeGap = nowDate - savedDate
             if timeGap.days > 7:
                 print(f'{content[0].strip("[]:")} has been inactive for over 7 days and lost their role\n---\n')
-                file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "w")
-                userList=file.readlines()
                 userList.pop(i)
+                print("popped",i)
+                file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "w")
                 file.writelines(userList)
                 file.close()
-                role=userList[0].strip("\n").replace("[ROLE]: ", "")
-                role=discord.utils.get(ctx.guild.roles, name=role)
+                useRole=discord.utils.get(ctx.guild.roles, name=role)
                 member = await ctx.guild.fetch_member(content[0].strip("[]:"))
-                await member.remove_roles(role)
+                await member.remove_roles(useRole)
 
 #updates upon user message and gives them the role if they don't have it
 @bot.event
