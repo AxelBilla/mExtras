@@ -114,8 +114,12 @@ async def hourlyCheck(ctx):
             timeGap = nowDate - savedDate
             if timeGap.days > 7:
                 print(f'{content[0].strip("[]:")} has been inactive for over 7 days and lost their role\n---\n')
-                role=userList[0].split()
-                role=role[1]
+                file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "w")
+                userList=file.readlines()
+                userList.pop(i)
+                file.writelines(userList)
+                file.close()
+                role=userList[0].strip("\n").replace("[ROLE]: ", "")
                 role=discord.utils.get(ctx.guild.roles, name=role)
                 member = await ctx.guild.fetch_member(content[0].strip("[]:"))
                 await member.remove_roles(role)
@@ -149,8 +153,7 @@ async def on_message(ctx):
             fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "a")
             fileWrite.write(f"[{ctx.author.id}]: {nowDate}\n")
             fileWrite.close()
-        role=userList[0].split()
-        role=role[1]
+        role=userList[0].strip("\n").replace("[ROLE]: ", "")
         print(f'Added "{role}" to "{ctx.author.id}"\n---\n')
         role=discord.utils.get(ctx.guild.roles, name=role)
         member = await ctx.guild.fetch_member(ctx.author.id)
