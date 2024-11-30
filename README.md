@@ -25,7 +25,6 @@ Adds the results and displays their sum put together.
 
 </br></br>
 
-
 ## 【 Administration 】
 
 
