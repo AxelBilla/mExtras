@@ -10,8 +10,8 @@ from datetime import datetime #pip install datetime
 from random import randint
 import asyncio
 
-owner_id=1242535080866349226
-bot_id=1311068031384027167
+owner_id=
+bot_id=
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents, owner_id = owner_id)
