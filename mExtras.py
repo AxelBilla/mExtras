@@ -8,9 +8,10 @@ from discord.ext.commands import has_permissions, MissingPermissions
 from private.config import token
 from datetime import datetime #pip install datetime
 from random import randint
+import asyncio
 
-owner_id=
-bot_id=
+owner_id=1242535080866349226
+bot_id=1311068031384027167
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents, owner_id = owner_id)
@@ -99,8 +100,11 @@ async def setupAllowedRole(ctx, role: str):
 
 @bot.tree.command(name='roll', description='Rolls X die with Y faces in the "XdY" format. (i.e, 1d4)')
 async def diceRoll(ctx, dice: str):
+    await ctx.response.defer()
     dice=dice.lower()
     dice=dice.split("d")
+    die=0
+    faces=0
     if len(dice) != 2:
         check=False
     else:
@@ -111,7 +115,7 @@ async def diceRoll(ctx, dice: str):
             check=True
         except ValueError:
             check=False
-    if check and die>0 and faces>0:
+    if check and die>0 and faces>0 and die<=190:
         if die > 1:
             roll=[]
             rollSum=0
@@ -123,15 +127,21 @@ async def diceRoll(ctx, dice: str):
             roll.pop()
             roll="**], [**".join(roll)
             roll="[**"+roll+"**] & [**"+lastRoll+"**]."
-            plur='die'
         else:
             roll=randint(1,faces)
             rollSum=roll
             roll="[**"+str(roll)+"**]"
-            plur='dice'
-        await ctx.response.send_message(f"**> {ctx.user.display_name} rolled {die}d{faces} {plur}**:game_die: {roll}\n* Total: **{rollSum}**.")
+        msg=f"**> {ctx.user.display_name} rolled a {die}d{faces}**:game_die: {roll}\n* Total: **{rollSum}**."
+        if len(msg)>2000:
+            errorMsg=await ctx.followup.send("Invalid Value(s), try smaller ones.")
+        else:
+            await ctx.followup.send(msg)
+    elif die>190:
+        errorMsg=await ctx.followup.send("Invalid Value(s), try smaller ones.")
     else:
-        await ctx.response.send_message("Invalid Input(s), please try again", ephemeral=True)
+       errorMsg= await ctx.followup.send("Invalid Input(s), please try again")
+    await asyncio.sleep(3.0)
+    await errorMsg.delete()
 
 
 #checks if user has sent at least once message in the last 7 days
