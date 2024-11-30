@@ -7,8 +7,10 @@ from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions, MissingPermissions
 from private.config import token
 from datetime import datetime #pip install datetime
+from random import randint
 
 owner_id=1242535080866349226
+bot_id=1311068031384027167
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents, owner_id = owner_id)
@@ -95,6 +97,42 @@ async def setupAllowedRole(ctx, role: str):
     await ctx.response.send_message(f"\"{role}\" has been made the server's activity role!", ephemeral=True)
     await hourlyCheck.start(ctx)
 
+@bot.tree.command(name='roll', description='Rolls X die with Y faces in the "XdY" format. (i.e, 1d4)')
+async def diceRoll(ctx, dice: str):
+    dice=dice.lower()
+    dice=dice.split("d")
+    if len(dice) != 2:
+        check=False
+    else:
+        try:
+            roll=int(''.join(dice))
+            die=int(dice[0])
+            faces=int(dice[1])
+            check=True
+        except ValueError:
+            check=False
+    if check and die>0 and faces>0:
+        if die > 1:
+            roll=[]
+            rollSum=0
+            for i in range(die):
+                roll.append(i)
+                roll[i]=str(randint(1,faces))
+                rollSum=rollSum+int(roll[i])
+            lastRoll=roll[len(roll)-1]
+            roll.pop()
+            roll="**], [**".join(roll)
+            roll="[**"+roll+"**] & [**"+lastRoll+"**]."
+            plur='die'
+        else:
+            roll=randint(1,faces)
+            rollSum=roll
+            roll="[**"+str(roll)+"**]"
+            plur='dice'
+        await ctx.response.send_message(f"**> {ctx.user.display_name} rolled {die}d{faces} {plur}**:game_die: {roll}\n* Total: **{rollSum}**.")
+    else:
+        await ctx.response.send_message("Invalid Input(s), please try again", ephemeral=True)
+
 
 #checks if user has sent at least once message in the last 7 days
 @tasks.loop(hours=1)
@@ -125,36 +163,37 @@ async def hourlyCheck(ctx):
 #updates upon user message and gives them the role if they don't have it
 @bot.event
 async def on_message(ctx):
-    file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "r")
-    userList=file.readlines()
-    file.close()
-    roleCheck=userList[0].split()
-    roleCheck=roleCheck[1]
-    check=True
-    print("[NEW MESSAGE]\n")
-    if roleCheck != "none":
-        for i in range(len(userList)):
-            content=userList[i].split()
-            userID=content[0].strip("[]:")
-            if userID==str(ctx.author.id):
-                content[1]=datetime.now().strftime("%d/%m/%Y")
-                userList[i]=' '.join(content)+'\n'
-                fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "w")
-                fileWrite.writelines(userList)
+    if ctx.author.id != bot_id:
+        file = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "r")
+        userList=file.readlines()
+        file.close()
+        roleCheck=userList[0].split()
+        roleCheck=roleCheck[1]
+        check=True
+        print("[NEW MESSAGE]\n")
+        if roleCheck != "none":
+            for i in range(len(userList)):
+                content=userList[i].split()
+                userID=content[0].strip("[]:")
+                if userID==str(ctx.author.id):
+                    content[1]=datetime.now().strftime("%d/%m/%Y")
+                    userList[i]=' '.join(content)+'\n'
+                    fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "w")
+                    fileWrite.writelines(userList)
+                    fileWrite.close()
+                    print("[EDIT]\n")
+                    check=False
+                    break
+            if check:
+                print("[NEW]\n")
+                nowDate=datetime.now().strftime("%d/%m/%Y")
+                fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "a")
+                fileWrite.write(f"[{ctx.author.id}]: {nowDate}\n")
                 fileWrite.close()
-                print("[EDIT]\n")
-                check=False
-                break
-        if check:
-            print("[NEW]\n")
-            nowDate=datetime.now().strftime("%d/%m/%Y")
-            fileWrite = open(dir+"/serverData/" + str(ctx.guild.id) + "/" + "activity.txt", "a")
-            fileWrite.write(f"[{ctx.author.id}]: {nowDate}\n")
-            fileWrite.close()
-        role=userList[0].strip("\n").replace("[ROLE]: ", "")
-        print(f'Added "{role}" to "{ctx.author.id}"\n---\n')
-        role=discord.utils.get(ctx.guild.roles, name=role)
-        member = await ctx.guild.fetch_member(ctx.author.id)
-        await member.add_roles(role)
+            role=userList[0].strip("\n").replace("[ROLE]: ", "")
+            print(f'Added "{role}" to "{ctx.author.id}"\n---\n')
+            role=discord.utils.get(ctx.guild.roles, name=role)
+            member = await ctx.guild.fetch_member(ctx.author.id)
+            await member.add_roles(role)
 
 bot.run(token)
