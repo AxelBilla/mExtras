@@ -15,7 +15,19 @@ Checks if a user has sent a message in the last week, if not remove their activi
 **[Once every hour]**
 </br></br>
 
-## 【 Administrator Commands 】
+
+## 【 Commands 】
+
+
+### /roll [{X}d{Y}]
+Gives out a random amount between 1 and {NumY}, {NumX} amount of times.
+Adds the results and displays their sum put together.
+
+**[Once every hour]**
+</br></br>
+
+
+## 【 Administration 】
 
 
 ### /role_act [role_name]
