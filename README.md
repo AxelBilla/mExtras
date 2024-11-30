@@ -23,7 +23,6 @@ Checks if a user has sent a message in the last week, if not remove their activi
 Gives out a random amount between 1 and {NumY}, {NumX} amount of times.
 Adds the results and displays their sum put together.
 
-**[Once every hour]**
 </br></br>
 
 
