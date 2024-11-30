@@ -22,6 +22,7 @@ Checks if a user has sent a message in the last week, if not remove their activi
 ### /roll [{X}d{Y}]
 Gives out a random number between 1 and {Y}, {X} amount of times.
 Adds the results and displays their sum put together.
+
 </br></br>
 
 
